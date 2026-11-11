@@ -1,0 +1,41 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Environment and secrets
+.env
+.env.*
+secrets.toml
+
+# Operating System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs and temporary files
+*.log
+tmp/
+temp/
+
+# IDE configurations
+.vscode/
+.idea/
+
+# System generated logs
+.system_generated/
+
+# Data cache (pre-computed outputs, regenerated automatically on first run)
+data/cache/
+
+# Raw dataset files are excluded; they are auto-downloaded from SNAP on first run.
+# The app downloads from: https://snap.stanford.edu/data/wiki-Vote.txt.gz
+data/wiki-Vote.txt
+data/wiki-Vote.txt.gz

@@ -1,0 +1,22 @@
+{
+    "node_count": 7115,
+    "edge_count": 103689,
+    "density": 0.0020485375110809584,
+    "reciprocity": 0.0564572905515532,
+    "avg_in_degree": 14.573295853829936,
+    "avg_out_degree": 14.573295853829936,
+    "median_in_degree": 0.0,
+    "median_out_degree": 2.0,
+    "max_in_degree": 457,
+    "max_out_degree": 893,
+    "num_wcc": 24,
+    "largest_wcc_size": 7066,
+    "wcc_coverage_pct": 99.31131412508785,
+    "num_scc": 5816,
+    "largest_scc_size": 1300,
+    "scc_coverage_pct": 18.271257905832748,
+    "undirected_avg_clustering": 0.1408978458930873,
+    "undirected_transitivity": 0.12547914899233995,
+    "pure_voters_count": 4734,
+    "pure_candidates_count": 1005
+}
