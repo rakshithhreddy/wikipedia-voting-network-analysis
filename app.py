@@ -100,15 +100,36 @@ def load_graph() -> nx.DiGraph:
     return build_directed_graph(txt_path)
 
 
-@st.cache_data(show_spinner="Computing SNA metrics & community partitions...")
+@st.cache_data(show_spinner="Loading SNA metrics & community partitions...")
 def load_analysis_data(
     _G: nx.DiGraph,
 ) -> Tuple[Dict, pd.DataFrame, Dict[int, int], float, pd.DataFrame]:
     """Compute and cache all network metrics, centralities, and Louvain partitions."""
+    exports_dir = "exports"
     cache_csv = os.path.join("data", "cache", "node_metrics.csv")
-    summary_json = os.path.join("data", "cache", "network_summary.json")
+    node_metrics_path = os.path.join(exports_dir, "node_centrality_metrics.csv")
+    comm_path = os.path.join(exports_dir, "community_partitions.csv")
+    overview_json = os.path.join(exports_dir, "network_overview_metrics.json")
 
-    # Global metrics
+    # Fast path: Load pre-computed canonical data if available (ensures instant startup on Cloud)
+    if (
+        os.path.exists(node_metrics_path)
+        and os.path.exists(comm_path)
+        and os.path.exists(overview_json)
+    ):
+        with open(overview_json, "r", encoding="utf-8") as f:
+            global_metrics = json.load(f)
+        df_metrics = pd.read_csv(node_metrics_path)
+        df_community = pd.read_csv(comm_path)
+        partition = dict(zip(df_metrics["node_id"].astype(int), df_metrics["community_id"].astype(int)))
+        
+        import community as community_louvain
+        G_undirected = _G.to_undirected()
+        modularity_q = float(community_louvain.modularity(partition, G_undirected))
+        return global_metrics, df_metrics, partition, modularity_q, df_community
+
+    # Full computation fallback
+    os.makedirs(os.path.dirname(cache_csv), exist_ok=True)
     global_metrics = compute_global_metrics(_G)
 
     # Centralities
@@ -123,6 +144,7 @@ def load_analysis_data(
     # Louvain communities on undirected projection
     partition, modularity_q, _ = detect_louvain_communities(_G, random_state=42)
     df_metrics["community_id"] = df_metrics["node_id"].map(partition)
+    os.makedirs(os.path.dirname(cache_csv), exist_ok=True)
     df_metrics.to_csv(cache_csv, index=False)
 
     # Community statistics
@@ -133,14 +155,10 @@ def load_analysis_data(
     pajek_path = os.path.join("exports", "wiki_vote_directed.net")
     if not os.path.exists(pajek_path):
         export_to_pajek(_G, pajek_path)
-        export_node_metrics_csv(df_metrics, os.path.join("exports", "node_centrality_metrics.csv"))
-        export_community_summary_csv(
-            df_community, os.path.join("exports", "community_partitions.csv")
-        )
+        export_node_metrics_csv(df_metrics, node_metrics_path)
+        export_community_summary_csv(df_community, comm_path)
         export_edge_list_csv(_G, os.path.join("exports", "wiki_vote_edges.csv"))
-        export_global_metrics_json(
-            global_metrics, os.path.join("exports", "network_overview_metrics.json")
-        )
+        export_global_metrics_json(global_metrics, overview_json)
 
     return global_metrics, df_metrics, partition, modularity_q, df_community
 

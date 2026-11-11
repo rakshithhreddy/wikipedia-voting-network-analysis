@@ -34,8 +34,3 @@ temp/
 
 # Data cache (pre-computed outputs, regenerated automatically on first run)
 data/cache/
-
-# Raw dataset files are excluded; they are auto-downloaded from SNAP on first run.
-# The app downloads from: https://snap.stanford.edu/data/wiki-Vote.txt.gz
-data/wiki-Vote.txt
-data/wiki-Vote.txt.gz

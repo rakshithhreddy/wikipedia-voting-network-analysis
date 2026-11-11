@@ -92,7 +92,7 @@ def load_raw_edge_dataframe(file_path: Optional[str] = None) -> pd.DataFrame:
     Parameters
     ----------
     file_path : Optional[str]
-        Path to wiki-Vote.txt. If None, checks default data directory.
+        Path to wiki-Vote.txt. If None, checks default data directory and fallbacks.
 
     Returns
     -------
@@ -100,7 +100,22 @@ def load_raw_edge_dataframe(file_path: Optional[str] = None) -> pd.DataFrame:
         DataFrame with columns ['source', 'target'] of type int64.
     """
     if file_path is None or not os.path.exists(file_path):
-        file_path = download_and_extract_dataset()
+        txt_path = os.path.join(DEFAULT_DATA_DIR, "wiki-Vote.txt")
+        gz_path = os.path.join(DEFAULT_DATA_DIR, "wiki-Vote.txt.gz")
+        edges_csv = os.path.join(os.path.dirname(DEFAULT_DATA_DIR), "exports", "wiki_vote_edges.csv")
+
+        if os.path.exists(txt_path) and os.path.getsize(txt_path) > 0:
+            file_path = txt_path
+        elif os.path.exists(gz_path) and os.path.getsize(gz_path) > 0:
+            file_path = download_and_extract_dataset(data_dir=DEFAULT_DATA_DIR)
+        elif os.path.exists(edges_csv) and os.path.getsize(edges_csv) > 0:
+            logger.info(f"Loading edge list from pre-packaged export: {edges_csv}")
+            df = pd.read_csv(edges_csv)
+            # Normalize column names
+            df = df.rename(columns={"source_voter": "source", "target_candidate": "target"})
+            return df[["source", "target"]].astype("int64")
+        else:
+            file_path = download_and_extract_dataset(url=SNAP_WIKI_VOTE_URL, data_dir=DEFAULT_DATA_DIR)
 
     logger.info(f"Loading edge list from {file_path}...")
     df = pd.read_csv(
